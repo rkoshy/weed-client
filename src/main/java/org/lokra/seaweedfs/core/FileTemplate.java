@@ -24,6 +24,7 @@ package org.lokra.seaweedfs.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 import org.apache.http.entity.ContentType;
 import org.lokra.seaweedfs.core.contect.*;
 import org.lokra.seaweedfs.core.file.FileHandleStatus;
@@ -275,12 +276,14 @@ public class FileTemplate implements InitializingBean, DisposableBean {
     public FileHandleStatus getFileStatus(String fileId) throws IOException {
         final String targetUrl = getTargetUrl(fileId);
         HeaderResponse headerResponse = volumeWrapper.getFileStatusHeader(targetUrl, fileId);
+        Header contentTypeHeader = headerResponse.getLastHeader("Content-Type");
         try {
             return new FileHandleStatus(fileId,
                     headerDateFormat.parse(headerResponse.getLastHeader("Last-Modified").getValue()).getTime(),
                     headerResponse.getLastHeader("Content-Disposition").getValue()
                             .substring(10, headerResponse.getLastHeader("Content-Disposition").getValue().length() - 1),
-                    headerResponse.getLastHeader("Content-Type").getValue(),
+                    // newer versions of weed server won't return Content-Type in HTTP headers
+                    contentTypeHeader == null ? null : contentTypeHeader.getValue(),
                     Long.parseLong(headerResponse.getLastHeader("Content-Length").getValue()));
         } catch (ParseException e) {
             throw new SeaweedfsException("Could not parse last modified time [" +

@@ -44,6 +44,7 @@ dependencies {
     compile('org.apache.httpcomponents:httpclient:4.5.2')
     compile('org.apache.httpcomponents:httpmime:4.5.2')
     compile('org.apache.httpcomponents:httpclient-cache:4.5.2')
+    compile('org.apache.httpcomponents:httpcore:4.4.4')
     compile('org.ehcache:ehcache:3.1.1')
     compile('org.springframework:spring-core:4.3.1.RELEASE')
     compile('org.springframework:spring-beans:4.3.1.RELEASE')

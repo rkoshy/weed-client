@@ -54,7 +54,7 @@ public class FileSource implements InitializingBean, DisposableBean {
     private boolean enableLookupVolumeCache = true;
     private int lookupVolumeCacheExpiry = 120;
     private int lookupVolumeCacheEntries = 100;
-    private boolean enableFileStreamCache = true;
+    private boolean enableFileStreamCache = false;
     private int fileStreamCacheEntries = 1000;
     private long fileStreamCacheSize = 8192;
     private HttpCacheStorage fileStreamCacheStorage = null;

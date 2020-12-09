@@ -21,22 +21,41 @@
  */
 
 
-group = 'org.lokra.seaweedfs'
-version = '0.7.3.RELEASE'
+group = 'com.platform28.seaweedfs'
+version = '0.7.4.SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'jacoco'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
 
 repositories {
-    mavenCentral()
+    mavenLocal()
+    maven {
+        url = uri('http://artifactory.platform28.com:8081/artifactory/libs-release')
+        name = "libs-release"
+        credentials {
+            username 'maven'
+            password 'maven'
+        }
+    }
+
+    maven {
+        name = "libs-snapshot"
+        url = uri('http://artifactory.platform28.com:8081/artifactory/libs-snapshot')
+        credentials {
+            username 'maven'
+            password 'maven'
+        }
+    }
 }
+
 
 dependencies {
     compile('com.fasterxml.jackson.core:jackson-databind:2.8.0')
@@ -60,61 +79,6 @@ jacocoTestReport {
 
 check.dependsOn jacocoTestReport
 
-eclipse {
-    classpath {
-        containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
-        containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7'
-    }
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-
-            def repositoryUrl
-            if (version.toString().split("\\.")[3] == "RELEASE")
-                repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-            else
-                repositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
-
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: repositoryUrl) {
-                if (project.hasProperty('sonatypeUsername'))
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-
-            pom.project {
-                name project.name
-                packaging 'jar'
-                description 'SeaweedFS Client For Java.'
-                url 'https://github.com/lokra-platform/seaweedfs-client'
-
-                scm {
-                    url 'scm:git@github.com:lokra-platform/seaweedfs-client.git'
-                    connection 'scm:git@github.com:lokra-platform/seaweedfs-client.git'
-                    developerConnection 'git@github.com:lokra-platform/seaweedfs-client.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The MIT License (MIT)'
-                        url 'https://mit-license.org'
-                        distribution 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'ChihoSin'
-                        name 'Chiho Sin'
-                    }
-                }
-            }
-        }
-    }
-}
-
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from 'build/docs/javadoc'
@@ -131,6 +95,27 @@ artifacts {
     archives sourcesJar
 }
 
-//signing {
-//    sign configurations.archives
-//}
+publishing {
+    repositories {
+        maven {
+            name = "artifactory"
+            def releasesRepoUrl = "http://artifactory.platform28.com:8081/artifactory/simple/libs-release-local"
+            def snapshotsRepoUrl = "http://artifactory.platform28.com:8081/artifactory/simple/libs-snapshot-local"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username 'maven'
+                password 'maven'
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+

@@ -82,7 +82,7 @@ public class FileTemplate implements InitializingBean, DisposableBean {
         headerDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public boolean checkFileExist(String fileId) {
+    public boolean checkFileExist(String fileId) throws IOException {
         final String targetUrl = getTargetUrl(fileId);
 
         return volumeWrapper.checkFileExist(targetUrl, fileId);
